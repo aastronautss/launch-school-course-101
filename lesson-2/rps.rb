@@ -2,13 +2,29 @@ def prompt(message)
   puts "=> #{message}"
 end
 
-CHOICES = ['rock', 'paper', 'scissors']
+def win?(first, second)
+  (first   == 'rock'     && second == 'scissors') ||
+    (first == 'paper'    && second == 'rock')     ||
+    (first == 'scissors' && second == 'paper')
+end
+
+def display_result(player, computer)
+  if win?(player, computer)
+    prompt 'You win!'
+  elsif win?(computer, player)
+    prompt 'The computer wins!'
+  else
+    prompt 'It\'s a tie!'
+  end
+end
+
+CHOICES = %w(rock paper scissors).freeze
 
 loop do
   # User choice
   choice = ''
   loop do
-    prompt "Choose one: #{CHOICES.join(", ")}"
+    prompt "Choose one: #{CHOICES.join(', ')}"
     choice = gets.chomp
 
     break if CHOICES.include? choice.downcase
@@ -21,17 +37,11 @@ loop do
 
   prompt "You chose #{choice}; the computer chose #{computer_choice}"
 
-  if (choice == 'rock'     && computer_choice == 'scissors') ||
-     (choice == 'paper'    && computer_choice == 'rock')     ||
-     (choice == 'scissors' && computer_choice == 'paper')
-    prompt 'You win!'
-  elsif (choice == 'rock'     && computer_choice == 'paper')    ||
-        (choice == 'paper'    && computer_choice == 'scissors') ||
-        (choice == 'scissors' && computer_choice == 'rock')
-    prompt 'The computer wins!'
-  end
+  display_result(choice, computer_choice)
 
   prompt 'Do you want to play again?'
   play_again = gets.chomp
   break unless play_again.casecmp('y') == 0
 end
+
+prompt "Thanks for playing! Good bye!"
