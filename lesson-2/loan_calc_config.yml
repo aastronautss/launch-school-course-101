@@ -1,0 +1,8 @@
+en:
+  welcome: "Welcome to the loan calculator!"
+  loan_amount: "Enter the loan amount in USD:"
+  apr: "Enter the APR in percentage (ex: 2.3%, 5.1):"
+  loan_duration: "Enter the loan duration in years:"
+  monthly_payment: "Your monthly payment is: "
+  invalid_input: "Invalid input."
+  calculate_again: "Would you like to do another calculation? (Y to calculate again)"

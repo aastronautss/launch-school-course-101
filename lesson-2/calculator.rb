@@ -5,22 +5,27 @@
 
 require 'yaml'
 
+# Standardized output.
 def prompt(message)
   puts "=> #{message}"
 end
 
+# Takes a string, returns true if it contains only a number.
 def number?(num)
   integer?(num) || float?(num)
 end
 
+# Takes a string, returns true if it contains only an integer.
 def integer?(num)
   /^\d+$/.match num
 end
 
+# Takes a string, returns true if it contains only a float.
 def float?(num)
   !(num.to_i.to_s == num) && (/^\d*\.?\d*$/.match num)
 end
 
+# Helpful message for calculation process.
 def operation_to_message(op)
   word = case op
          when '1'
@@ -35,11 +40,18 @@ def operation_to_message(op)
   word
 end
 
+# Takes two strings, returns true if either is a float.
 def any_floats?(num1, num2)
   float?(num1) || float?(num2)
 end
 
-config = YAML.load_file('calc_config.yml')
+# -------------------------
+# Begin procedures
+# -------------------------
+
+config = YAML.load_file('calc_config.yml') # Load config file
+
+# Language selection procedure
 
 lang = ''
 prompt config['lang_select']
