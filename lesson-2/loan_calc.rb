@@ -1,11 +1,11 @@
 require 'yaml'
 
-LANGUAGE = 'en'
+LANGUAGE = 'en'.freeze
 MESSAGES = YAML.load_file('loan_calc_config.yml')
 
 # Takes a message key and a string indicating the language.
 # Returns hash of messages loaded from YAML.
-def messages(message, lang='en')
+def messages(message, lang = 'en')
   MESSAGES[lang][message]
 end
 
@@ -17,12 +17,12 @@ end
 
 # Takes a string, returns true if it only contains a number.
 def valid_number?(num)
-  (integer?(num) || float?(num)) && num.to_f >= 0
+  (valid_integer?(num) || float?(num)) && num.to_f >= 0
 end
 
 # Takes a string, returns true if it only contains an integer.
-def integer?(num)
-  /^\d+$/.match num
+def valid_integer?(num)
+  (/^\d+$/.match num) && num.to_i > 0
 end
 
 # Takes a string, returns true if it only contains a float.
@@ -36,14 +36,14 @@ end
 
 prompt 'welcome'
 
+# Input loan amount
 loop do
-  # Input loan amount
   loan_amount = ''
   loop do
     prompt 'loan_amount'
     loan_amount = gets.chomp
 
-    break if valid_number?(loan_amount)
+    break if valid_integer?(loan_amount)
 
     prompt 'invalid_input'
   end
@@ -70,7 +70,7 @@ loop do
     prompt 'loan_duration'
     loan_duration = gets.chomp
 
-    break if valid_number?(loan_duration)
+    break if valid_integer?(loan_duration)
 
     prompt 'invalid_input'
   end
@@ -82,13 +82,13 @@ loop do
   duration_in_months = loan_duration * 12
 
   # Calculate monthly payment
-  monthly_payment = (loan_amount * (monthly_interest * ((1 + monthly_interest) ** duration_in_months))) / (((1 + monthly_interest) ** duration_in_months) - 1)
+  monthly_payment = (loan_amount * (monthly_interest * ((1 + monthly_interest)**duration_in_months))) / (((1 + monthly_interest)**duration_in_months) - 1)
 
   prompt 'monthly_payment'
-  puts '$' + monthly_payment.round(2).to_s
+  puts '$' + format('%02.2f', monthly_payment)
 
   # Prompt to calculate again
   prompt 'calculate_again'
   calculate_again = gets.chomp
-  break unless calculate_again.downcase.start_with? "y"
+  break unless calculate_again.casecmp('y') == 0
 end
