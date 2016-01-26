@@ -3,38 +3,64 @@
 # perform operation on the two numbers
 # output the result
 
+require 'yaml'
+
 def prompt(message)
   puts "=> #{message}"
 end
 
-def valid_number?(num)
-  num.to_i != 0
+def number?(num)
+  integer?(num) || float?(num)
+end
+
+def integer?(num)
+  /^\d+$/.match num
+end
+
+def float?(num)
+  !(num.to_i.to_s == num) && (/^\d*\.?\d*$/.match num)
 end
 
 def operation_to_message(op)
-  case op
-  when '1'
-    'Adding'
-  when '2'
-    'Subtracting'
-  when '3'
-    'Multiplying'
-  when '4'
-    'Dividing'
-  end
+  word = case op
+         when '1'
+           'Adding'
+         when '2'
+           'Subtracting'
+         when '3'
+           'Multiplying'
+         when '4'
+           'Dividing'
+         end
+  word
 end
 
-prompt "Welcome to the calculator! Enter your name:"
+def any_floats?(num1, num2)
+  float?(num1) || float?(num2)
+end
+
+config = YAML.load_file('calc_config.yml')
+
+lang = ''
+prompt config['lang_select']
+
+loop do
+  lang = gets.chomp
+
+  break if %w(en hu).include? lang
+  prompt config['invalid_selection']
+end
+
+prompts = config[lang]
+
+prompt prompts['welcome']
 
 name = ''
 loop do
   name = gets.chomp
 
-  if name.empty?()
-    prompt "Make sure you use a valid name."
-  else
-    break
-  end
+  break unless name.empty?
+  prompt prompts['valid_name']
 end
 
 prompt "Hi #{name}"
@@ -42,68 +68,64 @@ prompt "Hi #{name}"
 loop do # main loop
   num1 = ''
   loop do
-    prompt "Enter the first number."
+    prompt prompts['first_number']
     num1 = gets.chomp
 
-    if valid_number?(num1)
-      break
-    else
-      prompt "Invalid number!"
-    end
+    break if number?(num1)
+
+    prompt prmopts['invalid_number']
   end
 
   num2 = ''
   loop do
-    prompt "Enter the second number."
+    prompt prompts['second_number']
     num2 = gets.chomp
 
-    if valid_number?(num2)
-      break
-    else
-      prompt "Invalid number!"
-    end
+    break if number?(num2)
+
+    prompt prompts['invalid_number']
   end
 
-  operator_prompt = <<-MSG
-    Which operation?
-    1) Add
-    2) Subtract
-    3) Multiply
-    4) Divide
-  MSG
-  prompt operator_prompt
+  prompt prompts['operator']
 
   operator = ''
   loop do
     operator = gets.chomp
 
-    if %w(1 2 3 4).include? operator
-      break
-    else
-      prompt "You must choose 1, 2, 3, or 4."
-    end
+    break if %w(1 2 3 4).include? operator
+    prompt "You must choose 1, 2, 3, or 4."
   end
 
-  prompt "#{operation_to_message(operator)} the two numbers..."
+  prompt operation_to_message(operator) + prompts['calculating']
 
   ans = case operator
         when "1"
-          num1.to_i + num2.to_i
+          if any_floats?(num1, num2)
+            num1.to_f + num2.to_f
+          else
+            num1.to_i + num2.to_i
+          end
         when "2"
-          num1.to_i - num2.to_i
+          if any_floats?(num1, num2)
+            num1.to_f + num2.to_f
+          else
+            num1.to_i - num2.to_i
+          end
         when "3"
-          num1.to_i * num2.to_i
+          if any_floats?(num1, num2)
+            num1.to_f + num2.to_f
+          else
+            num1.to_i * num2.to_i
+          end
         when "4"
           num1.to_f / num2.to_f
-        else
-          ans = "I didn't recognize that operator!"
         end
 
-  prompt "Your answer is: #{ans}"
+  prompt prompts['answer'] + ans.to_s
 
-  prompt "Do you want to perform another calculation? (Y to calculate again)"
+  prompt prompts['calculate_again']
   answer = gets.chomp
   break unless answer.downcase.start_with? "y"
 end
 
-prompt("Goodbye!")
+prompt prompts['goodbye']

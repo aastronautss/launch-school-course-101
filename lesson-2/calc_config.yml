@@ -1,0 +1,13 @@
+lang_select: "Please select your language: en: English hu: Hungarian"
+invalid_selection: "Invalid selection."
+en:
+  welcome: "Welcome to the Calculator! Enter your name:"
+  valid_name: "Make sure you enter a valid name."
+  first_number: "Enter your first number:"
+  second_number: "Enter your second number:"
+  invalid_number: "Invalid number!"
+  operatior: "Which operation? 1) Add 2) Subtract 3) Multiply 4) Divide"
+  calculating: " the two numbers..."
+  answer: "Your answer is: "
+  calculate_again: "Do you want to perform another calculation? (Y to calculate again)"
+  goodbye: "Thank you for using the Calculator! Goodbye!"
