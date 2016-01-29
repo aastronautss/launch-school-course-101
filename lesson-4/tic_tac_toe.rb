@@ -23,9 +23,14 @@ def display_board(board)
   puts ""
   puts " #{board[1]} | #{board[2]} | #{board[3]} "
   puts "---+---+---"
-  puts " #{board[4]} | #{board[5]} | #{board[6] } "
+  puts " #{board[4]} | #{board[5]} | #{board[6]} "
   puts "---+---+---"
   puts " #{board[7]} | #{board[8]} | #{board[9]} "
+end
+
+def joinor(array, delimiter = ', ', word = 'or')
+  array.last = "#{word} array.last" if array.length > 1
+  array.join delimiter
 end
 
 # Returns an array of space numbers for each empty space in the board.
@@ -34,15 +39,15 @@ def empty_spaces(board)
 end
 
 def row_size(board)
-  Math::sqrt board.length
+  Math.sqrt board.length
 end
 
 # Returns all the wining positions on the board
 # TODO: Refactor for variable sizes
 def winning_positions
   [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # Rows
-  [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # Cols
-  [[1, 5, 9], [3, 5, 7]]              # Diags
+    [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # Cols
+    [[1, 5, 9], [3, 5, 7]]              # Diags
 end
 
 # -----------------------
@@ -85,11 +90,11 @@ end
 # -----------------------
 
 def threats(board)
-
+  board
 end
 
 def any_threats?(board)
-
+  board
 end
 
 # -----------------------
@@ -98,7 +103,7 @@ end
 
 # Prompts the user's move, validates it, and places the piece on the board.
 def user_move(board)
-  prompt "Chose your space: #{board.keys.join ", "}"
+  prompt "Chose your space: #{joinor(board.keys)}"
 
   space_num = nil
   loop do
@@ -131,13 +136,11 @@ def get_result(board)
   positions_to_check = winning_positions
 
   positions_to_check.each do |line|
-    if board[line[0]] == PLAYER_MARKER &&
-       board[line[1]] == PLAYER_MARKER &&
-       board[line[2]] == PLAYER_MARKER
+    if board.values_at(*line).count(PLAYER_MARKER) ==
+       row_size(board)
       return PLAYER_MARKER
-    elsif board[line[0]] == COMPUTER_MARKER &&
-          board[line[1]] == COMPUTER_MARKER &&
-          board[line[2]] == COMPUTER_MARKER
+    elsif board.values_at(*line).count(COMPUTER_MARKER) ==
+          row_size(board)
       return COMPUTER_MARKER
     end
   end
@@ -151,9 +154,9 @@ end
 def display_score(result, scores)
   case result
   when PLAYER_MARKER
-    prompt "Player wins! This round!"
+    prompt "Player wins this round!"
   when COMPUTER_MARKER
-    prompt "Computer wins!"
+    prompt "Computer wins this round!"
   when "T"
     prompt "It's a tie!"
   end
@@ -163,7 +166,7 @@ end
 
 # Increments the winner's score.
 def update_scores(result, scores)
-  scores[result] += 1
+  scores[result] += 1 if scores.key? result
 end
 
 # Returns true if any score has reached the target.
