@@ -4,6 +4,7 @@ PLAYER_MARKER = "X".freeze
 COMPUTER_MARKER = "O".freeze
 BLANK_MARKER = " ".freeze
 MAX_WINS = 5
+PLAYERS = ['player', 'computer'].freeze
 
 # Standard output
 def prompt(input)
@@ -62,7 +63,7 @@ def full_board?(board)
 end
 
 # Returns true if the passed space is empty on the passed board.
-def space_empty?(space_num, board)
+def space_empty?(board, space_num)
   empty_spaces(board).include? space_num
 end
 
@@ -101,12 +102,12 @@ end
 # AI
 # -----------------------
 
-def threats(board)
+def almost_filled_lines(board, marker)
   positions_to_check = winning_positions
 
   space_to_take = nil
   positions_to_check.each do |line|
-    if board.values_at(*line).count(PLAYER_MARKER) == row_size(board) - 1
+    if board.values_at(*line).count(marker) == row_size(board) - 1
       space_to_take = get_empty_space(board, line)
       break if space_to_take
     end
@@ -116,7 +117,11 @@ def threats(board)
 end
 
 def any_threats?(board)
-  !!threats(board)
+  !!almost_filled_lines(board, PLAYER_MARKER)
+end
+
+def any_opportunities?(board)
+  !!almost_filled_lines(board, COMPUTER_MARKER)
 end
 
 # -----------------------
@@ -132,7 +137,7 @@ def user_move(board)
     input = gets.chomp
     if valid_input? input
       space_num = parse_input input
-      break if space_empty?(space_num, board)
+      break if space_empty?(board, space_num)
       prompt "Space not available!"
     else
       prompt "Invalid input!"
@@ -142,18 +147,30 @@ def user_move(board)
   play_move(board, space_num, PLAYER_MARKER)
 end
 
-# The computer makes a random move on the board.
+# the computer makes a move on the board.
 def computer_move(board)
   move = nil
 
   case
+  when any_opportunities?(board)
+    move = almost_filled_lines(board, COMPUTER_MARKER)
   when any_threats?(board)
-    move = threats(board)
+    move = almost_filled_lines(board, PLAYER_MARKER)
+  when space_empty?(board, 5)
+    move = 5
   else
     move = empty_spaces(board).sample
   end
 
   play_move(board, move, COMPUTER_MARKER)
+end
+
+def move!(board, current_player)
+  current_player == "player" ? user_move(board) : computer_move(board)
+end
+
+def alternate_player(current_player)
+  current_player == "player" ? "computer" : "player"
 end
 
 # -----------------------
@@ -233,15 +250,15 @@ loop do
   loop do
     board = new_board 3
     result = nil
+    current_player = PLAYERS.sample
+
+    prompt "#{current_player.capitalize} goes first!"
 
     loop do
       display_board(board)
 
-      board = user_move(board)
-      result = get_result(board)
-      break if result
-
-      board = computer_move(board)
+      board = move!(board, current_player)
+      current_player = alternate_player(current_player)
       result = get_result(board)
       break if result
     end
