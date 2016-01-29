@@ -1,3 +1,5 @@
+require 'pry'
+
 PLAYER_MARKER = "X".freeze
 COMPUTER_MARKER = "O".freeze
 BLANK_MARKER = " ".freeze
@@ -29,7 +31,7 @@ def display_board(board)
 end
 
 def joinor(array, delimiter = ', ', word = 'or')
-  array.last = "#{word} array.last" if array.length > 1
+  array[-1] = "#{word} #{array[-1]}" if array.length > 1
   array.join delimiter
 end
 
@@ -70,6 +72,16 @@ def play_move(board, space_num, piece)
   board
 end
 
+# Takes a board and an array of space numbers.
+# Returns the first space number in that array for which the board has an
+# empty space.
+def get_empty_space(board, line)
+  line.each do |space|
+    return space if board[space] == BLANK_MARKER
+  end
+  nil
+end
+
 # -----------------------
 # User input
 # -----------------------
@@ -90,11 +102,21 @@ end
 # -----------------------
 
 def threats(board)
-  board
+  positions_to_check = winning_positions
+
+  space_to_take = nil
+  positions_to_check.each do |line|
+    if board.values_at(*line).count(PLAYER_MARKER) == row_size(board) - 1
+      space_to_take = get_empty_space(board, line)
+      break if space_to_take
+    end
+  end
+
+  space_to_take
 end
 
 def any_threats?(board)
-  board
+  !!threats(board)
 end
 
 # -----------------------
@@ -122,7 +144,15 @@ end
 
 # The computer makes a random move on the board.
 def computer_move(board)
-  move = empty_spaces(board).sample
+  move = nil
+
+  case
+  when any_threats?(board)
+    move = threats(board)
+  else
+    move = empty_spaces(board).sample
+  end
+
   play_move(board, move, COMPUTER_MARKER)
 end
 
