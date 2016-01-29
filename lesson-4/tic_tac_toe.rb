@@ -108,6 +108,18 @@ def valid_input?(raw_input)
 end
 
 # -----------------------
+# AI
+# -----------------------
+
+def threats(board)
+
+end
+
+def any_threats?(board)
+
+end
+
+# -----------------------
 # Moves
 # -----------------------
 
