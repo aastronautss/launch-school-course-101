@@ -177,8 +177,8 @@ end
 # Win Conditions
 # -----------------------
 
-# Returns the PLAYER_MARKER or COMPUTER_MARKER depending on who won, "T" if it's a tie, or nil if
-# nobody has won.
+# Returns the PLAYER_MARKER or COMPUTER_MARKER depending on who won,
+# "T" if it's a tie, or nil if nobody has won.
 def get_result(board)
   positions_to_check = winning_positions
 
