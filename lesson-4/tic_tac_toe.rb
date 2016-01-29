@@ -1,3 +1,6 @@
+PLAYER_MARKER = "X".freeze
+COMPUTER_MARKER = "O".freeze
+BLANK_MARKER = " ".freeze
 MAX_WINS = 5
 
 # Standard output
@@ -6,66 +9,40 @@ def prompt(input)
 end
 
 # Returns a fresh board
-def set_board
-  [[" ", " ", " "],
-   [" ", " ", " "],
-   [" ", " ", " "]]
+def new_board(row_size)
+  number_of_spaces = row_size**2
+  new_board = {}
+  (1..number_of_spaces).each { |num| new_board[num] = BLANK_MARKER }
+  new_board
 end
 
 # Prints the board
+# TODO: refactor for variable sized boards
 def display_board(board)
   system 'clear'
-  puts '  1   2   3'
-  horiz_seprator = '  --+---+--'
-  board.each_with_index do |row, row_index|
-    puts "#{row_index + 1} #{row[0]} | #{row[1]} | #{row[2]}"
-    puts horiz_seprator unless row_index >= board.length - 1
-  end
+  puts ""
+  puts " #{board[1]} | #{board[2]} | #{board[3]} "
+  puts "---+---+---"
+  puts " #{board[4]} | #{board[5]} | #{board[6] } "
+  puts "---+---+---"
+  puts " #{board[7]} | #{board[8]} | #{board[9]} "
 end
 
-# Returns an array of coordinates for each empty space in the board.
-# Each coordinate is in the form of an array [x, y].
+# Returns an array of space numbers for each empty space in the board.
 def empty_spaces(board)
-  empties = []
-  board.each_with_index do |row, row_index|
-    row.each_with_index do |col, col_index|
-      empties << [row_index, col_index] if col == ' '
-    end
-  end
-  empties
+  board.select { |_, marker| marker == BLANK_MARKER }.keys
 end
 
-# Returns the board's columns.
-def get_cols(board)
-  cols = Array.new(board[0].size) { Array.new }
-  board.each do |row|
-    row.each_with_index do |cell, col_index|
-      cols[col_index] << cell
-    end
-  end
-
-  cols
+def row_size(board)
+  Math::sqrt board.length
 end
 
-# Returns the board's rows.
-def get_rows(board)
-  board
-end
-
-# Returns the board's diagonals.
-def get_diags(board)
-  diags = Array.new(2) { Array.new }
-
-  0.upto(2)   { |index| diags[0] << board[index][index] }
-  diags[1] << board[0][2]
-  diags[1] << board[1][1]
-  diags[1] << board[2][0]
-
-  diags
-end
-
-def winning_positions(board)
-  get_rows(board) + get_cols(board) + get_diags(board)
+# Returns all the wining positions on the board
+# TODO: Refactor for variable sizes
+def winning_positions
+  [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # Rows
+  [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # Cols
+  [[1, 5, 9], [3, 5, 7]]              # Diags
 end
 
 # -----------------------
@@ -78,14 +55,13 @@ def full_board?(board)
 end
 
 # Returns true if the passed space is empty on the passed board.
-def space_empty?(coords, board)
-  empty_spaces(board).include? coords
+def space_empty?(space_num, board)
+  empty_spaces(board).include? space_num
 end
 
 # Inserts the given piece at the given coordinates on the given board.
-def play_move(board, coords, piece)
-  x, y = coords
-  board[x][y] = piece
+def play_move(board, space_num, piece)
+  board[space_num] = piece
   board
 end
 
@@ -96,15 +72,12 @@ end
 # Takes a valid input.
 # Returns an array containing the user's sele
 def parse_input(raw_input)
-  raw_input.gsub!(/(\?|\s)/, '')
-  coords = raw_input.split ''
-  coords.map! { |number| number.to_i - 1 }
-  coords
+  raw_input.to_i
 end
 
 # Validates the user's input, making sure it's in the right format.
 def valid_input?(raw_input)
-  !!raw_input.match(/^\d,?\s?\d$/)
+  !!raw_input.match(/^\d$/)
 end
 
 # -----------------------
@@ -125,46 +98,51 @@ end
 
 # Prompts the user's move, validates it, and places the piece on the board.
 def user_move(board)
-  prompt 'Pick your coordinates (row, column): '
-  prompt 'Format: 2, 3 or 1 3 or 21'
+  prompt "Chose your space: #{board.keys.join ", "}"
 
-  coords = []
+  space_num = nil
   loop do
     input = gets.chomp
     if valid_input? input
-      coords = parse_input input
-      break if space_empty?(coords, board)
+      space_num = parse_input input
+      break if space_empty?(space_num, board)
       prompt "Space not available!"
     else
       prompt "Invalid input!"
     end
   end
 
-  play_move(board, coords, 'X')
+  play_move(board, space_num, PLAYER_MARKER)
 end
 
 # The computer makes a random move on the board.
 def computer_move(board)
   move = empty_spaces(board).sample
-  play_move(board, move, "O")
+  play_move(board, move, COMPUTER_MARKER)
 end
 
 # -----------------------
 # Win Conditions
 # -----------------------
 
-# Returns the "X" or "O" depending on who won, "T" if it's a tie, or nil if
+# Returns the PLAYER_MARKER or COMPUTER_MARKER depending on who won, "T" if it's a tie, or nil if
 # nobody has won.
-def get_winner(board)
-  positions_to_check = winning_positions(board)
-  full_rows = positions_to_check.select do |position|
-    position.all? { |piece| piece == "X" } ||
-      position.all? { |piece| piece == "O" }
+def get_result(board)
+  positions_to_check = winning_positions
+
+  positions_to_check.each do |line|
+    if board[line[0]] == PLAYER_MARKER &&
+       board[line[1]] == PLAYER_MARKER &&
+       board[line[2]] == PLAYER_MARKER
+      return PLAYER_MARKER
+    elsif board[line[0]] == COMPUTER_MARKER &&
+          board[line[1]] == COMPUTER_MARKER &&
+          board[line[2]] == COMPUTER_MARKER
+      return COMPUTER_MARKER
+    end
   end
 
-  return full_rows[0][0] unless full_rows.empty?
   return "T" if full_board? board
-
   nil
 end
 
@@ -172,15 +150,15 @@ end
 # hash, and prints a useful message.
 def display_score(result, scores)
   case result
-  when "X"
+  when PLAYER_MARKER
     prompt "Player wins! This round!"
-  when "O"
+  when COMPUTER_MARKER
     prompt "Computer wins!"
   when "T"
     prompt "It's a tie!"
   end
-  prompt "Player: #{scores["X"]}"
-  prompt "Computer: #{scores["O"]}"
+  prompt "Player: #{scores[PLAYER_MARKER]}"
+  prompt "Computer: #{scores[COMPUTER_MARKER]}"
 end
 
 # Increments the winner's score.
@@ -196,7 +174,7 @@ end
 # Prints a winner message. Assumes a winner exists.
 def display_winner(scores)
   winner = ''
-  if scores['X'] == MAX_WINS
+  if scores[PLAYER_MARKER] == MAX_WINS
     winner = 'Player'
   else
     winner = 'Computer'
@@ -218,20 +196,20 @@ end
 # -----------------------
 
 loop do
-  scores = { "X" => 0, "O" => 0 }
+  scores = { PLAYER_MARKER => 0, COMPUTER_MARKER => 0 }
   loop do
-    board = set_board
+    board = new_board 3
     result = nil
 
     loop do
       display_board(board)
 
       board = user_move(board)
-      result = get_winner(board)
+      result = get_result(board)
       break if result
 
       board = computer_move(board)
-      result = get_winner(board)
+      result = get_result(board)
       break if result
     end
 
